@@ -1,0 +1,497 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{floatrow}
+\usepackage{caption}
+\usepackage[mathscr]{euscript}
+\graphicspath{ {./images/} }
+
+
+\title{CS5120 : Probability in Computing}
+\author{ 
+\textbf{TEAM - 8}\\
+CS18BTECH11037 - P.V.Asish\\
+CS18BTECH11018 - J Sai Nishith\\
+CS18BTECH11013 - G Vishal Siva Kumar \\
+
+\\ 
+This document was generated using \LaTeX \\
+\\
+\textbf{TOPIC :} Lazy Select
+}
+
+\date{February 4, 2021}
+
+\begin{document}
+
+
+
+\maketitle
+\\ \\ \\\ \\\ \\\\\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ 
+\section*{LAZYSELECT}
+\par Given an set of n numbers, we need to obtain the $k^{th}$ smallest element in the given set. For current analysis, we assume that all the elements in the given array are distinct but we may also extend the following algorithm for multisets as well.\\
+\\
+Let $r_s(t)$ denote the rank of the element t in S ($k^{th}$ smallest element has a rank of k) and $S_{(i)}$ denotes the $i^{th}$ smallest element of S.\\
+\\
+ALGORITHM :\\
+\\
+INPUT : A set S which contains n elements and an integer k such that,\\ $k \in [1,n]$ \\
+\\
+LAZYSELECT :
+\begin{enumerate}
+\item Pick $n^{3/4}$ elements from S, chosen independently and uniformly at random  with replacement, call this multiset of elements R\
+\item Sort R in $O(n^{3/4}logn)$ steps using any optimal sorting algorithm.
+\item Let $x = kn^{-1/4}$.\\ For $l = max\{\floor{x - \sqrt{n}}, 1\}$ and $h = min\{\ceil{x + \sqrt{n}}, n^{3/4}\}$, let $a = R_{(l)}$ and $b = R_{(h)}$. By comparing a and b to every element of S, determine $r_s(a)$ and $r_s(b)$. 
+\item \textbf{If} k $<$ $n^{1/4}$ , then P = $\{y \in S  |  y \leq b \}$;\\
+\hspace{5mm} \textbf{else if} k $>$ $n - n^{1/4}$ , let P = $\{y \in S  |  y \geq a \}$;\\
+\hspace{5mm} \textbf{else if} k $\in$ [$n^{1/4},n-n^{1/4}$] , let P = $\{\ y \in S\ |\ a \leq y \leq b \}$;\\
+Check whether $S_{(k)}$ $\in$ P and $|P| \leq 4n^{3/4}+2$. If not, repeat steps 1-3 until such a set P is found.
+\item By sorting P in $O(|P|log|P|)$ steps, identify $P_{(k-r_s(a)+1)}$, which is $S_{k}$ \\
+\end{enumerate}
+OUTPUT: The $k^{th}$ smallest element of S. \\
+\\
+\\ \\ \\
+EXPLANATION : \\
+\\
+Consider S in a sorted order for easier analysis as shown below :
+
+\begin{figure}[h]
+    \includegraphics[width=\textwidth]{1pic.png}
+\end{figure}
+\\
+\textbf{In step 1}, we choose $n^{3/4}$ elements independently and uniformly at random  with replacement from set S and call the resulting multiset to be R. We assume that elements are grouped into blocks of size $n^{1/4}$, so we have $n^{3/4}$ blocks. For easier analysis we assume that the elements in set R comes from each of those blocks.\\
+\\
+\textbf{In step 2}, we sort the obtained multiset R.\\
+\\
+\textbf{In step 3}, we calculate x which is $kn^{-1/4}$ which denotes the index of block in which we assume $S_{(k)}$ is present. Then we compute l and h by taking an error margin of $\sqrt{n}$, these are the bounds for set which contains $S_{(k)}$. Then we compute a and b which are elements with rank l and s in the set R respectively.  By comparing a and b to every element of S,we determine $r_s(a)$ and $r_s(b)$ which are ranks of a and b in the set S respectively.\\
+\\
+\textbf{In step 4}, there are three possible cases. Either $S_{(k)}$ is towards extreme left region of the set or extreme right region of the set or in the middle region of the set. The first two corner cases are of little interest to us in this analysis, but we perform analysis on the more significant case where k $\in$ [$n^{1/4},n-n^{1/4}$], where $S_{(k)}$ lies in the middle region of the set.\\
+Then we check if $S_{(k)}$ $\in$ P based on $r_s(a)$ and $r_s(b)$. ($S_{(k)}$ $\notin$ P \ if $r_s(a)>k$ or $r_s(b)<k$ ). We also check if $|P| \leq 4n^{3/4}+2$. If P does not satisfy mentioned properties, repeat steps 1-3 until such a set P is found. We show that the probability of P not satisfying the above properties is less.\\
+\\
+\textbf{In step 5}, we sort obtained set P and return $P_{(k-r_s(a)+1)}$ because, element \textbf{a} has a rank $r_s(a)$ in S and the element with rank k in S will have rank $k-r_s(a)+1$ in set P. So $P_{(k-r_s(a)+1)}$ is the required element.\\
+\\
+Idea of the algorithm is to identify two elements a and b such that both of the following statements hold with high probability :
+\begin{enumerate}
+    \item The element $S_{(k)}$ that we seek is in P.
+    \item The set P of elements between a and b is not very large, so that we can sort P inexpensively in Step 5.
+\end{enumerate}
+
+\textbf{Claim 1}: With probability $1-O(n^{-1/4})$, the above algorithm finds $S_{(k)}$ on the first pass through steps 1-5, and thus performs only $2n + o(n)$ comparisons.
+
+\textbf{PROOF :} The algorithm will fail in first pass if $S_{(k)}$ $\notin$ P or size of P is much larger than $4n^{3/4}+2$.\\
+CASE 1 : $S_{(k)}$ $\notin$ P \\
+This happens when rank of \textbf{a} in S is greater than k ($r_s(a)>k$) or if rank of \textbf{b} in S is less than k ($r_s(b)<k$).\\
+1.\textbf{$r_s(a)>k$} means that, more than \textbf{h} ( where h is $min\{\ceil{x + \sqrt{n}}, n^{3/4}\}$)  elements in R are less than $S_{(k)}$.\\
+2.\textbf{$r_s(b)<k$} means that, less than \textbf{l} ( where l is $max\{\floor{x - \sqrt{n}}, 1\}$) elements in R are less than $S_{(k)}$.\\
+\\
+Consider the probability for an element in R to be less than $S_{(k)}$. \\
+P[an element in R $< S_{(k)}] \leq \ k/n$ \\
+\\
+For each element $i \in R$, let us define a random variable $X_i$ such that,\\
+\[ X_{i} = 
+    \begin{cases} 
+      1 & \text{if $,i\ <\ S_{(k)} $} \\
+      0 & \text{,otherwise} 
+   \end{cases}
+\]
+This is a Bernoulli random variable with probability $p= k/n$.(we consider equality for easier analysis) So,
+
+$$E[X_i]\ = \ k/n$$
+$$\sigma^2(X_i)\ =\ (k/n)(1-k/n)$$   
+\\
+Consider 
+
+\begin{equation} \nonumber
+    \begin{split}
+        \mu_x = E[X] & = E[\sum_{i=1}^{n^{3/4}} X_{i}] \\
+        & = \sum_{i=1}^{n^{3/4}} E[X_{i}]\ (by\ linearity\ of\ expectation) \\
+        & = n^{3/4}.k/n \\
+        & = k/n^{1/4} \\
+        & = x \\
+    \end{split}
+\end{equation}
+\begin{equation} \nonumber
+    \begin{split}
+       \ \  Variance = \sigma^2(X) & = \sigma^2(\sum_{i=1}^{n^{3/4}} X_{i}) \\
+        & = \sum_{i=1}^{n^{3/4}} \sigma^2(X_{i})\ \ \  (since\ random\ variables\ are\ independent) \\
+        & = n^{3/4}.(k/n)(1-k/n) \\
+        & \leq n^{3/4}/4 \ \ \ \ \ \ \ \ \ (since\ (k/n)(1-k/n) \leq 1/4) \\
+        \\
+        Hence \ \  \sigma(x) &\leq n^{3/8}/2 \\
+    \end{split}
+\end{equation}
+\\
+\\
+Recall chebyshev inequality,\\
+$$P[ |X-\mu|\geq a\sigma] \leq \ 1/a^2$$ \\
+
+where,\\
+a is some constant\\
+X is random variable\\
+$\mu$ is mean of the random variable X\\
+$\sigma$ is standard deviation of X\\
+\\
+
+Now consider
+\begin{equation} \nonumber
+    \begin{split}
+        P[ |X-\mu_x|\geq \sqrt{n}] \leq \ 1/a^2 &=  P[ |X-\mu_x|>2n^{1/8}\sigma_x]  \\
+        & \leq 1/4n^{1/4} (from\ chebyshevs\ bound) \\
+        & = O(n^{1/4}) \\
+    \end{split}
+\end{equation}
+\begin{figure}[h]
+    \includegraphics[width=\textwidth]{2pic.png}
+\end{figure}
+\\
+The probability for this bad event to happen is $O(n^{1/4})$. Also step-3 takes 2n number of comparisons and remaining steps use $o(n)$ number of comparisons.\\
+Hence with probability $1-O(n^{-1/4})$, the above algorithm finds $S_{(k)}$ on the first pass through steps 1-5, and performs only $2n + o(n)$ comparisons.
+\\
+\section*{DETERMINISTIC ALGORITHMS}
+\par \textbf{1.SORTING}\\
+\\
+A simple algorithm is to sort the given array and return the  $k^{th}$ element in array sorted in increasing order. \\
+\textbf{Time Complexity:} $T(n) = O(nlogn)$. (by using mergesort) \\
+\textbf{Space Complexity:} $T(n) = O(n)$. (by using mergesort) \\
+Using merge sort ensures a time complexity of $O(nlogn)$ even in worst case. The time complexity will be same for all the cases.
+
+\par \textbf{2.HEAP SELECT}\\
+\\
+This algorithm uses min-heap (a binary tree such that the value in each node is less than value in nodes of its child) to find the  $k^{th}$ smallest element in the given array.
+The Kth smallest element can be found better than $O(nlogn)$ time complexity. \\
+\\
+In heap select, we form a min heap using the given array using BUILDHEAP() method and then we keep on extracting the minimum elements using EXTRACTMIN() method and we re-structure the heap using HEAPIFY() method k times. The returned ans on the $k^{th}$ iteration will be the $k^{th}$ smallest element in the array.\\
+Pseudo code for heap select : \\
+\\
+HEAP-SELECT(A, k)\\
+1 \hspace{5mm}i = 0\\
+2 \hspace{5mm}ans = 0\\
+3 \hspace{5mm}h = BUILDHEAP(A)\\
+4 \hspace{5mm}\textbf{while} i $<$ k :\\
+5 \hspace{10mm}ans = EXTRACTMIN(h)\\
+6 \hspace{10mm}HEAPIFY(h)\\
+7 \hspace{10mm}i = i + 1\\
+8 \hspace{5mm}\textbf{return }ans \\
+
+\textbf{Time Complexity:} $T(n) = O(n + klogn)$.\\
+Because building the heap(line 3 of the pseudo code) takes $O(n)$ time and heapify method(line 6 of the pseudo code) takes $O(logn)$ time which is called k times. Hence the overall complexity is $O(n + klogn)$.\\
+\\
+\textbf{Space Complexity:} $T(n) = O(1)$.\\
+Because we can do all the operations on given array itself, there is no need for extra space.
+
+\par \textbf{3.QUICK SELECT}\\
+\\
+Quick Select algorithm can be made both as randomized and deterministic algorithm based on the way we choose the pivot. Given below is the deterministic version the Quick Select algorithm.\\
+\\
+Quick Select is similar to Quick Sort algorithm but we don't complete the sorting part, we know that the pivot is fixed in its sorted position after the partition() method is called. We check whether the chosen pivot is the $k^{th}$ smallest element. If it's not the $k^{th}$ smallest element, we recur on left or right partitions based on the rank of the pivot.
+\\
+\par Pseudo code for quickselect algorithm as follows:\\
+QUICKSELECT(A, p, r, k)\\
+1 \hspace{5mm}\textbf{if} p $<$ r \\
+2 \hspace{10mm}q = PARTITION(A, p, r)\\
+3 \hspace{10mm}\textbf{if} q $=$ k \\
+4 \hspace{15mm}\textbf{return} A[q] \\
+5 \hspace{10mm}\textbf{else if} q $<$ k \\
+6 \hspace{15mm}QUICKSELECT(A, q+1, r, k)\\
+7 \hspace{10mm}\textbf{else} \\
+8 \hspace{15mm}QUICKSELECT(A, p, q-1, k)\\
+ \\
+ 
+In the above algorithm, partition() method is same as in the Quicksort.\\
+\\
+\textbf{Time Complexity:}\\
+The worst case time complexity of this method is $ O(n^2)$, but it works in $O(n)$ on average.  \\
+\textbf{Space Complexity:} $T(n) = O(n)$. (by using mergesort) \\
+Compute a pivot index to partition the subarray about that pivot. Let it be q. Partition the subarray into two (could be empty) subarrays $A[p..q-1]$ and $A[q+1..r]$. Every element in $A[p..q-1]$ should be less than or equal to $A[q]$ and every element in $A[q+1..r]$ should be greater than or equal to $A[q]$\\
+\textbf{Conquer:} 
+By making recursive calls to quicksort, sort the two subarrays $A[p..q-1]$ and $A[q+1..r]$\\
+\textbf{Combine:} As the subarrays are already sorted, no work is needed to combine: the entire array $A[p..r]$ is sorted. 
+\par Pseudo code for quicksort and partition algorithms are as follows:\\
+QUICKSORT(A, p, r)\\
+1 \hspace{5mm}\textbf{if} p $<$ r \\
+2 \hspace{10mm}q = PARTITION(A, p, r)\\
+3 \hspace{10mm}QUICKSORT(A, p, q-1)\\
+4 \hspace{10mm}QUICKSORT(A, q+1, r)
+ \\
+
+PARTITION(A, p, r)\\
+1 \hspace{5mm}x = A[r]\\
+2 \hspace{5mm}i = p - 1\\
+3 \hspace{5mm}\textbf{for} j = p \textbf{to} r - 1\\
+4 \hspace{10mm}\textbf{if}A[j] $\leq$ x\\
+5 \hspace{15mm}i = i + 1\\
+6 \hspace{15mm}exchange A[i] with A[j] \\
+7 \hspace{5mm}A[i + 1] with A[r]\\
+8 \hspace{5mm}\textbf{return} i + 1\\
+
+\par The running time of the algorithm depends on whether the partitioning is balanced or unbalanced.
+\par \textbf{Worst case partitioning:} In quicksort, the worst case time complexity occurs when the partition is done in such a manner that one subarray contains $n-1$ elements and the other subarray contains 0 elements. If we assume this unbalanced partitioning in each recursive call, this is the worst case. This partitioning costs $\Theta(n)$ time. The recursive call on an array of size 0 just returns , $T(0) = \Theta(1)$, and the recurrence for the running time is $T(n) = T(n - 1) + T(1) + \Theta(n)$, which gives us $T(n) = \Theta(n^2)$. 
+
+\par \textbf{Best case partitioning:} Best case occurs when the partitioning is most balanced. In the most balanced possible split, PARTITION produces two subarrays, each of size no more than $n/2$, since one is of size $\floor{n/2}$ and one of size $\ceil{n/2} - 1$. In this case quicksort runs much faster. The recurrence for the running time is then $T(n) = 2T(n/2) + \Theta(n)$, where we tolerate the sloppiness from ignoring the floor and ceiling and from subtracting 1. This equation evaluates to $\Theta(nlgn)$. 
+
+\par \textbf{Average case partitioning:} In the average case, PARTITION produces a mix of "good" and "bad" splits and in a recursion tree in this case, the good and bad splits are distributed randomly throughout the tree. One can show that if all permutations of the input numbers are equally likely then the running time of quicksort in such a case will be $O(nlgn)$, but with a slightly larger constant hidden by the \emph{O}-notation
+
+\section*{Randomized quicksort}
+\par We randomize our algorithm to obtain good expected performance over all inputs.  \\
+Now we can randomize our algorithm either by explicitly permuting the input or using random sampling. We note that \textbf{random sampling} technique yields a simpler analysis, and so we continue with that. In random sampling technique, instead of always using $A[r]$ as the pivot, we will select a randomly chosen element form the subarray $A[p..r]$. We do so by first exchanging element $A[r]$ with an element chosen at random from $A[p..r]$. By randomly sampling the range $p,..r$, we ensure that the pivot element $x = A[r]$ is equally likely to be one of $r - p + 1$ elements in the subarray. Because we randomly choose the pivot element, we expect the split of the input array to be reasonably well balanced on average. 
+\par The changes to PARTITION and QUICKSORT are small In the new partition procedure, we simply implement the swap before actually partitioning:
+\par RANDOMIZED-PARTITION(A, p, r) \\
+1 \hspace{5mm}i = RANDOM(p, r) \\
+2 \hspace{5mm}exchange A[r] with A[i] \\
+3 \hspace{5mm}\textbf{return} PARTITION(A, p, r)
+\par The new quicksort calls RANDOMIZED-PARTITION in place of PARTITION:\\
+RANDOMIZED-QUICKSORT(A, p, r) \\
+1 \hspace{5mm}\textbf{if} p $<$ r\\
+2 \hspace{10mm}q = RANDOMIZED-PARTITION(A, p, r)\\
+3 \hspace{10mm}RANDOMIZED-QUICKSORT(A, p, q - 1)\\
+4 \hspace{10mm}RANDOMIZED-QUICKSORT(A, q + 1, r)
+\par \textbf{Worst case analysis}\\
+A worst case split at every level of recursion in quicksort produces a $\Theta(n^2)$ running time, which, intuitively is the worst case running time of the algorithm. We now prove this assertion. Let $T(n)$ be worst-case running time of the procedure QUICKSORT on an input size $n$. We have the recurrence\\
+\[T(n) = \max_{0 \leq q \leq n - 1} (T(q) + T(n - q - 1)) + \Theta(n)\]
+where the parameter $q$ ranges from $0$ to $n - 1$ because the procedure PARTITION produces two sub-problems with total size $n - 1$. We guess that $T(n) \leq cn^2$ for some constant $c$. Substituting this guess into the above recurrence, we obtain\\
+\begin{equation} \nonumber
+    \begin{split}
+        T(n) & = \max_{0 \leq q \leq n - 1} (cq^2 + c(n - q - 1)^2) + \Theta(n) \\
+        & = c.\max_{0 \leq q \leq n - 1} (q^2 + (n - q - 1)^2) + \Theta(n)
+    \end{split}
+\end{equation}
+The expression $q^2 + (n - q - 1)^2$ achieves a maximum over the parameter's range $0 \leq q \leq n - 1$ at either endpoint. To verify this claim, note that the second derivative of the expression with respect to q is positive i.e. \\
+\[\frac{d^2(q^2 + (n - q - 1)^2)}{dq^2}  = 4 > 0\]
+This observation gives us the bound
+\[\max_{0 \leq q \leq n - 1} (q^2 + (n - q - 1)^2) \leq (n - 1)^2 = n^2 - 2n + 1\]
+Continuing with our bounding of $T(n)$, we obtain
+\begin{equation} \nonumber
+    \begin{split}
+        T(n) & \leq cn^2 - c(2n - 1) + \Theta(n) \\
+        & \leq cn^2
+    \end{split}
+\end{equation}
+since we can pick the constant $c$ large enough so that $c(2n - 1)$ term dominates the $\Theta(n)$ term. Thus, $T(n) = O(n^2)$. One can also show that the recurrence has a solution of $T(n) = \Omega(n^2)$. Thus, the (worst-case) running time of quicksort is $\Theta(n^2)$
+
+\par \textbf{Expected running time:} The intuition behind the expected running time of RANDOMIZED-QUICKSORT to be $O(nlgn)$ is: if, in each level of recursion, the split induced by RANDOMIZED-PARTITION puts any constant fraction of the elements on one side of the partition, then the recursive tree has depth $\Theta(n)$, and $O(n)$ work is performed at each level. Even if we add a few new levels with most unbalanced split possible between these levels, the total time remains $O(nlgn)$. We can analyze the expected running time of RANDOMIZED-QUICKSORT precisely by first understanding how the partitioning procedure operates and then using this understanding to derive an $O(nlgn)$ bound on the expected running time. This upper bound on the expected running time, combined with the $\Theta(nlgn)$ best case bound yields a $\Theta(nlgn)$ expected running time. \textit{We assume that throughout the values of the elements being sorted are distinct}
+
+\par \textbf{Running time and comparisons}\\
+The QUICKSORT and RANDOMIZED-QUICKSORT procedures differ only in how they select pivot elements; they are the same in all other respects. 
+\\
+The running time of quicksort is dominated by the time spent in the PARTITION procedure. There can be at most $n$ calls to PARTITON over the entire execution of the quicksort algorithm. One call to PARTITION takes $O(1)$ time plus an amount of time that is proportional to the number of iterations of the \textbf{for} loop in line 3-6. Each iteration of this $for$ loop performs a comparison in line 4, comparing the pivot element to another element of the array A. Therefore, if we can count the total number of times that line 4 is executed, we can bound the total time spent in the \textbf{for} loop during the entire execution of the QUICKSORT
+\par \textbf{Lemma:} Let X be the number of comparisons performed in line 4 of PARTITION over the entire execution of QUICKSORT on an $n$-element array. Then the running time of QUICKSORT is $O(n + X)$.\\
+\textbf{Proof:} As we just concluded that the algorithm makes at most $n$ calls to PARTITION, each of which does a constant amount of work and then executes the \textbf{for} loop some number of times. Each iteration of the \textbf{for} loop executes line 4.\\
+
+\par Our goal, therefore, is to compute X, the total number of comparisons performed in all calls to PARTITION. 
+
+\par For ease of analysis we rename the elements of the array A as $z_1, z_2, ..., z_n$ where $z_i$ being the $ith$ smallest element. We also define the set $Z_{ij} = \{z_i, z_{i+1}, ..., z_j\}$ to be the set of elements between $z_i$ and $z_j$, inclusive.\\
+When does the algorithm compares $z_i$ and $z_j$?\\
+To answer this question, we first observe that each pair of element is compared at most once. Why? Elements are compared only to the pivot element and after a particular call of PARTITION finishes, the pivot element used in that call is never compared to any other elements. \\
+Our analysis uses indicator random variable. We define\\
+\[ X_{ij} = 
+    \begin{cases} 
+      1 & \text{if $z_i$ is compared with $z_j$} \\
+      0 & \text{otherwise} 
+   \end{cases}
+\]
+where we are considering whether the comparison takes place at any time during the execution of the algorithm, not just during one iteration or one call of PARTITION. Since each pair is compared at most once, we can easily characterize the total number of comparisons performed by the algorithm as follows:
+\[X = \sum_{i=1}^{n-1} \sum_{j=i+1}^{n}X_{ij}\]
+Taking expectations of both sides and then using the linearity of expectation, we obtain:
+\begin{equation} \nonumber
+    \begin{split}
+        E[X] & = E[\sum_{i=1}^{n-1} \sum_{j=i+1}^{n}X_{ij}] \\
+        & = \sum_{i=1}^{n-1} \sum_{j=i+1}^{n}E[X_{ij}] \\
+        & = \sum_{i=1}^{n-1} \sum_{j=i+1}^{n}Pr\{z_i \text{is compared with} z_j\}
+    \end{split}
+\end{equation}
+It remains to compute Pr{$z_i$ is compared with $z_j$}. Our analysis assumes that the RANDOMIZED-PARTITION procedure chooses each pivot randomly and independently. Now because we assume that element values are distinct, once a pivot $x$ is chosen with $z_i < x < z_j$, we know that $z_i$ and $z_j$ cannot be compared at any subsequent time. If, on the other hand, $z_i$ is chosen as pivot before any other item in $Z_{ij}$, then $z_i$ will be compared with each item in $Z_{ij}$, except for itself. Similarly if $z_j$ is chosen as pivot before any other item in $Z_{ij}$, then $z_j$ will be compared to each other item in $Z_{ij}$, except for itself. Thus, $z_i$ and $z_j$ are compared if and only if the first element to be chosen as pivot from $Z_{ij}$ is either $z_i$ or $z_j$.\\
+\par We now compute the probability that this event occurs. Prior to  the point at which an element from $Z_{ij}$ has been chosen as pivot, the whole set $Z_{ij}$ is together in the same partition. Therefore, any element in $Z_{ij}$ is equally likely to be the first one chosen as pivot. Because the set $Z_{ij}$ has $j - i + 1$ elements, and because pivots are chosen randomly and independently, the probability that any given element is the first one chosen as pivot is $1/(j - i + 1)$. Thus, we have
+\begin{equation} \nonumber
+    \begin{split}
+        Pr \{z_i \text{ is compared with } z_j\} & = Pr \{z_i \text{ or } z_j \text{ is first pivot chosen from } Z_{ij}\} \\
+        & = Pr\{z_i \text{ is first pivot chosen from } Z_{ij}\} \\
+        & \hspace{10mm} + Pr\{z_i \text{ is first pivot chosen from } Z_{ij}\} \\
+        & = \frac{1}{j - i + 1} + \frac{1}{j - i + 1} \\
+        & = \frac{2}{j - i + 1}
+    \end{split}
+\end{equation}
+The second line follows because the events are mutually exclusive. Now we substitute this probability to find the expected number of comparisons i.e.
+\begin{equation} \nonumber
+    \begin{split}
+        E[X] & = \sum_{i=1}^{n-1} \sum_{j=i+1}^{n}Pr\{z_i \text{is compared with} z_j\} \\
+        & = \sum_{i=1}^{n-1} \sum_{j=i+1}^{n} \frac{2}{j - i + 1}
+    \end{split}
+\end{equation}
+We evaluate this sum using change of variable $(k = j - i)$ and the bound on the harmonic series:
+\begin{equation} \nonumber
+    \begin{split}
+        E[X] & = \sum_{i=1}^{n-1} \sum_{j=i+1}^{n} \frac{2}{j - i + 1} \\
+        & = \sum_{i=1}^{n-1} \sum_{k=1}^{n - i} \frac{2}{k + 1} \\
+        & < \sum_{i=1}^{n-1} \sum_{k=1}^{n - i} \frac{2}{k} \\
+        & = \sum_{i=1}^{n-1} O(lgn) \\
+        & = O(nlgn)
+    \end{split}
+\end{equation}
+Thus, we conclude that, using RANDOMIZED-PARTITION, the expected running time of quicksort is O(nlgn) when element values are distinct.
+
+\pagebreak
+\section*{Randomized Minimum Cut Algorithm}
+Let G = (V, E) be a connected, undirected, multigraph with $n$ vertices.\\
+A \textbf{multigraph} may contain multiple edges between any pair of vertices.\\
+A \textbf{cut} in G = (V, E) is a partition of the vertex set V into two disjoint nonempty sets $V_1$ and $V_2$ ($V = V_1 \bigcup V_2$ and $V_1 \bigcap V_2 = \phi$) and an edge with one end in $V_1$ and the other in $V_2$ is said to \textit{cross} the cut. The size of the cut is given by the number of edges crossing the cut.\\
+A min-cut is a cut with smallest possible size. More formally, the \textbf{minimum cut} or \textbf{min-cut} of an undirected graph G = (V, E) is a partition of the nodes into two groups $V_1$ and $V_2$ (that is $V = V_1 \bigcup V_2$ and $V_1 \bigcap V_2 = \phi$), so that the number of edges between $V_1$ and $V_2$ is minimized. \\
+In the graph below, the minimum cut has size two and partitions the nodes into $V_1 = \{a, b, e, f\}$ and $V_2 = \{c, d, g, h\}$ \\
+\includegraphics{images/graph1.png} \\
+\par Here is a randomized algorithm for finding the min-cut(Karger's Algorithm)\\
+RANDOMIZED-MIN-CUT\\
+1 \hspace{3mm}\textbf{while} $|V| > 2$ \textbf{do}\\
+2 \hspace{8mm}select (u, v) $\in E$ randomly \\
+3 \hspace{8mm}delete all edges between u and v\\
+4 \hspace{8mm}replace u and v with a new super-node uv \\
+5 \hspace{8mm}replace all edges incident to u or v with edges incident to super-node uv\\
+6 \hspace{3mm}for $u_1, u_2 \in V$, set $V_1 =$ \{nodes in $u_1$\} and $V_2 =$ \{nodes in $u_2$\} \\
+7 \hspace{3mm}\textbf{return} $|E|$ 
+\par The following figure shows two random runs of Karger's Algorithm on a given graph.\\
+The figure demonstrates that the algorithm does not always produce the correct result. The first run determines the cut size to be 3 whereas the second random run determines the cut size to be 5. This gives an intuition about the repetition of algorithm for achieving a min-cut as we will discuss soon.
+\begin{figure}[h]
+    \includegraphics[width=\textwidth]{images/graph3.png}
+    {\caption*{Figure 2.1: Two random runs of Karger's Algorithm}}
+\end{figure}
+\par \textbf{Analysis}\\
+Karger's algorithm returns the minimum cut with a certain probability.\\
+To analyze it, let's go through a succession of key facts. \\
+\textbf{Fact 1:} \textit{If degree(u) denotes the number of edges touching u, then}
+\[ \sum_{u \in V} degree(u) = 2|E| \] 
+To see this, imagine the following experiment: for each node, list all the edges touching it. The number of edges in this list is exactly the left-hand sum. But each edge appears exactly twice in it, once for each endpoint.
+\par  \textbf{Fact 2:} \textit{If there are n nodes, then the average degree of a node is $2|E|/n$} \\
+This is straightforward calculation: when you pick a node X at random
+\[E[degree(X)] = \sum_{u \in V} Pr (X = u)degree(u) = \frac{1}{n} \sum_{u}degree(u) = 2|E|/n\]
+\par \textbf{Fact 3:} \textit{The size of the minimum cut is at most $2|E|/n$} \\
+Consider the partition of V into two pieces, one containing a single node u, and the other containing $n - 1$ nodes. The size of this cut is degree(u). Since this is a valid cut, the minimum cut cannot be bigger than this. In other words, for all nodes u, 
+\[(\text{sum of minimum cut}) \leq degree(u)\]
+This means that the size of the minimum cut is also $\leq$ the average degree, which we've seen is $2|E|/n$ 
+\par \textbf{Fact 4:} \textit{If an edge is picked at random, the probability that it lies across the minimum cut is at most $2/n$}\\
+This is because there are $|E|$ edges to choose from, and at most $2|E|/n$ of them are in the minimum cut.
+
+\par Now we have all the information we need to analyze Karger's algorithm. \textit{It returns the right answer as long as it never picks an edge acorss the minimum cut}. If it always picks a non-cut edge, then this edge will connect the two nodes on the same side of the cut, and so it is okay to collapse them together. \\
+Each time an edge is collapsed, the number of nodes decreases by 1,Therefore,
+\begin{equation} \nonumber
+    \begin{split}
+        \text{Pr(final cut is the min-cut)} 
+        & = \text{Pr(first selected edge is not in min-cut) x }\\
+        & \text{Pr(second selected edge is not in min-cut) x ...}\\
+        & \geq \left( 1 - \frac{2}{n} \right) \left(1 - \frac{2}{n - 1} \right) \left(1 - \frac{2}{n - 2} \right)...\left(1 - \frac{2}{4} \right) \left(1 - \frac{2}{3} \right) \\
+        & = \frac{n - 2}{n}.\frac{n - }{n - 1}.\frac{n - 4}{n - 2}...\frac{2}{4}.\frac{1}{3} \\
+        & = \frac{2}{n(n - 1)}
+    \end{split}    
+\end{equation}
+The last equation comes from noticing that almost every numerator cancels with the denominator two fractions down the line. \\
+Karger's algorithm succeeds with probability $p \geq 2/n^2$. Therefore, this algorithm yields the correct answer with probability at least $\Omega(1/n^2)$. \\
+We can repeatedly execute the randomized algorithm and take the minimum of all results. Suppose we run Karger's algorithm for $k$ iterations and take the smallest cut found then the probability we don't get a minimum cut is
+\[\text{Pr(min-cut not found in k iterations)} = \left( 1 - \frac{2}{n(n - 1)} \right)^k\]
+Now recall from calculus that for any $x \geq 1$, we have
+\[\frac{1}{4} \leq \left( 1 - \frac{1}{x}\right)^x \leq \frac{1}{e}\]
+For $x = \frac{n(n-1)}{2} \geq 1 (n > 0)$, we have
+\[\left( 1 - \frac{1}{\frac{n(n-1)}{2}} \right)^\frac{n(n-1)}{2} \leq \frac{1}{e}\]
+Raising both sides to ln$n$, we have
+\[\left(1 - \frac{2}{n(n - 1)}\right)^{\left(\frac{n(n-1)}{2}\right)ln\textit{n}} \leq \left( \frac{1}{e}\right)^{ln\textit{n}} = \frac{1}{n}\]
+
+\par Now for $k = \left(\frac{n(n-1)ln\textit{n}}{2}\right)$ iterations is
+\begin{equation} \nonumber
+    \begin{split}
+        \text{Pr(min-cut not found in k iterations)} 
+        & = \left( 1 - \frac{2}{n(n - 1)} \right)^{\frac{n(n-1)ln\textit{n}}{2}} \\
+        & \leq \frac{1}{n} \hspace{5mm} \left(\text{just proved} \right)
+    \end{split}    
+\end{equation}
+This means that running Karger's algorithm $O(n^2 log n)$ times produces a minimum cut with high probability. \\
+Using adjacency matrices, it's possible to run Karger's algorithm once in $O(n^2)$ and therefore running Karger's algorithm for $O(n^2 log n)$ times will give a minimum cut with high probability in $O(n^4 log n)$
+
+\subsection*{Speeding things up}
+We have the following observations
+\begin{itemize}
+    \item Karger's algorithm only fails if it contracts an edge in the min cut
+    \item The probability of contracting the wrong edge increases as the number of super-nodes decreases.
+\end{itemize}
+Since failures are more likely later in the algorithm, repeat just the later stages of the algorithm when the algorithm fails. Now the interesting fact is if we contract from $n$ nodes down to $n/\sqrt{2}$ nodes, the probability that we don't contract an edge in the min-cut is about 50\% (proof is out of scope) \\
+Now what happens if we do the following:
+\begin{itemize}
+    \item Contract down to $n/\sqrt{2}$ nodes
+    \item run two passes of the contraction algorithm from this point
+    \item take the better of the two cuts
+\end{itemize}
+This algorithm finds a min-cut iff
+\begin{itemize}
+    \item The partial contraction step doesn't contract and edge in the min-cut, and
+    \item At least one of the two remaining contractions does find a min-cut
+\end{itemize}
+Now we note that the first step succeeds with probability around 50\% and each remaining call succeeds with probability at least 4/n(n-1) and therefore the probability of success is:
+\begin{equation} \nonumber
+    \begin{split}
+        \text{Pr(success)} & \geq \frac{1}{2}\left( 1 - \left(1 - \frac{4}{n(n - 1)} \right)^2 \right)\\
+        & = \frac{1}{2}\left(1 - \left(1 - \frac{8}{n(n + 1)} + \frac{16}{n^2(n-1)^2} \right) \right) \\
+        & = \frac{1}{2} \left( \frac{8}{n(n-1)} - \frac{16}{n^2(n-1)^2}\right) \\
+        & = \frac{4}{n(n - 1)} - \frac{8}{n^2(n-1)^2}
+    \end{split}
+\end{equation}
+This new algorithm has roughly twice the success probability as the original algorithm! Keep repeating this process:
+\begin{itemize}
+    \item Base Case: When size is some small constant, just brute-force the answer
+    \item Otherwise, contract down to $n/\sqrt{2}$ nodes, then recursively apply this algorithm twice to the remaining graph and take the better of the two results.
+\end{itemize}
+This is the \textbf{Karger-Stein} algorithm\\
+For the runtime of this algorithm we have the following recurrence relation:
+\[ T(n) = 
+    \begin{cases} 
+      c & \text{if } n \leq n_o\\
+      2T(n/\sqrt{2}) + O(n^2) & \text{otherwise} 
+   \end{cases}
+\]
+By solving this recurrence we can show that this algorithm returns a min cut with probability $\Omega(1/log n)$. If we run this algorithm roughly $ln^2 n$ times, the probability that all run fails is roughly 
+\[\left( 1 - \frac{1}{ln n}\right)^{ln^2 n} \leq \left( \frac{1}{e}\right)^{ln n} = \frac{1}{n} \]
+The Karger-Stein algorithm is an $O(n^2 log^3 n)$-time algorithm for finding a min cut with high probability.
+
+
+\section*{Complexity Classes}
+\par \textbf{Definition:} A language L is a set of finite strings over some fixed alphabet $\Sigma$; i.e. $L \subseteq \Sigma^*$. An algorithm is said to recognize L if on input $x \in L$, the algorithm outputs Yes, and on input $x \notin L$, it outputs No.\\
+The following classes are well-known:
+
+\par P: \textbf{Polynomial time} A language L lies in P if there is a polynomial-time algorithm that recognizes L.
+
+\par NP: \textbf{Non-deterministic Polynomial time} The class NP consists of all languages L which have witness that can be recognised by polynomial time. More formally, $L \in NP$ implies that there is some polynomial time-computable predicate $\mathcal{P}$, and a polynomial $p$ such that
+\[x \in L \Longleftrightarrow \exists y \mathcal{P}(x, y)\]
+and the length of y (the "witness" that shows that $x \in L$) is at most $p(|x|)$
+
+\par RP: \textbf{Randomized Polynomial time} The class RP consists of all languages L that have a polynomial-time randomized algorithm A with the following behavior:
+\begin{itemize}
+    \item If $x \notin L$, then A \textbf{always} rejects x (with probability 1)
+    \item If $x \in L$, then A accepts x in L with probability at least $\frac{1}{2}$
+\end{itemize}
+An algorithm that runs in polynomial time but possibly return erroneous answer is often called a "Monte Carlo" algorithm. Hence RP, admits Monte Carlo algorithms with one-sided error (where the error is acceptance). Note that while RP is a class of languages, we may call an algorithm A an "RP algorithm" if it satisfies the condition in the above definition. \\
+Note that the error rate chosen above to be $\frac{1}{2}$ is arbitrary: we could have chosen it to be any positive constant. Indeed, it can be improved through a simple process called \textit{amplification}. Since the error is one-sided, we can repeat the algorithm t times independently: we reject the string x if of any of the t runs reject, and accept x otherwise. Since the runs were independent, we have\\
+\[\text{Pr(algorithm makes a mistake t times)} \leq \frac{1}{2^t}\]
+Thus, we can repeating the algorithm a polynomial number of times and make the error exponentially small. A famous example of language in RP is \textit{Primes}, the set of all prime numbers: this was shown by Adelman and Haung (1992), who gave a primality testing algorithm that always rejected composite numbers (i.e. numbers $\notin$ Primes), and accepted primes with probability at least 1/2.
+
+\par co-RP: \textbf{complement of RP} Let the complement of the set L be denoted by $\Bar{L}$; i.e. $\Bar{L} = \Sigma^* - L$. The language L is in co-RP iff $\Bar{L}$ is in RP. A more intuitive definition is the following:\\
+The class co-RP consists of all languages L that have a polynomial time randomized algorithm A with the following behavior:
+\begin{itemize}
+    \item If $x \notin L$, then A accepts L with probability at most $\frac{1}{2}$
+    \item If $x \in L$, then A \textbf{always} accepts x (with probability 1)
+\end{itemize}
+The language \textit{Primes} is also in co-RP. Gary Miller and Michael-Rabin gave a primality test that always accepts prime numbers, but rejects composites with probability at least $\frac{1}{2}$. Again, the number $\frac{1}{2}$ could be replaced by any positive constant, since we can use amplification to reduce the probability of error.
+
+\par ZPP: \textbf{Zero-error Probabilistic Polynomial time} A language L is in ZPP if there is an algorithm A that recognizes L (with no error) and runs in expected polynomial-time. \\
+Let's stress again that the worst-case running-time of the algorithm may not be polynomial, even though the expected time is polynomial. Another way to define ZPP in terms of the classes RP and co-RP which we saw above: indeed the following theorem holds:\\
+\textbf{Theorem:} $ZPP = RP \cap co-RP$\\
+\textbf{Proof:} Proof out of scope!\\
+
+\par BPP: \textbf{Bounded-error Probabilistic Polynomial time} The class BPP consists of all languages L that have a (worst-case) polynomial time randomized algorithm A with the following behavior:
+\begin{itemize}
+    \item If $x \in L$, then A accepts x in L  with probability $\geq \frac{3}{4}$
+    \item If $x \notin L$, then A accepts x in L with probability $\leq \frac{1}{4}$
+\end{itemize}
+Hence, the error probability in either case is at most $\frac{1}{4}$ \\
+Note that both RP and co-RP are subsets of BPP. An important open question in complexity theory is whether $BPP \subseteq NP$ or not.
+\end{document}
